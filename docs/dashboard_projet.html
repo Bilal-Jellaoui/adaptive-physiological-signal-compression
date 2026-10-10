@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compression Adaptative Multi-Capteurs — Tableau de bord du projet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F7F6;
+    --bg-deep:#101B1D;
+    --bg-deep-2:#16262A;
+    --ink:#16262A;
+    --ink-soft:#4B5D5F;
+    --line:#D8E0DE;
+    --teal:#0E7C86;
+    --teal-soft:#DCEEEF;
+    --amber:#C2740A;
+    --amber-soft:#F7E8D2;
+    --green:#3F8F5F;
+    --green-soft:#DEEFE4;
+    --paper:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:16px;
+    line-height:1.6;
+  }
+  h1,h2,h3,.serif{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+
+  /* ---------- layout shell ---------- */
+  .shell{display:flex; min-height:100vh;}
+  nav.side{
+    width:236px; flex-shrink:0;
+    background:var(--bg-deep);
+    color:#CFE3E1;
+    position:sticky; top:0; height:100vh;
+    padding:28px 20px;
+    display:flex; flex-direction:column;
+    gap:2px;
+    overflow-y:auto;
+  }
+  nav.side .brand{
+    font-family:'Fraunces',serif;
+    font-size:17px; font-weight:600;
+    color:#fff;
+    margin-bottom:6px;
+    line-height:1.3;
+  }
+  nav.side .brand small{
+    display:block; font-family:'IBM Plex Sans',sans-serif;
+    font-weight:400; font-size:12px; color:#7FA8A5; margin-top:6px;
+  }
+  nav.side .nav-group{margin-top:22px;}
+  nav.side .nav-label{
+    font-size:11px; color:#5E8481; margin:0 0 6px 10px;
+    text-transform:none;
+  }
+  nav.side a.nav-link{
+    display:block; padding:7px 10px; border-radius:6px;
+    font-size:13.5px; color:#B7D2CF; text-decoration:none;
+    border-left:2px solid transparent;
+  }
+  nav.side a.nav-link:hover{background:rgba(255,255,255,0.06); color:#fff;}
+  nav.side a.nav-link.active{
+    background:rgba(14,124,134,0.35); color:#fff;
+    border-left:2px solid #4FC3BE;
+  }
+
+  main{flex:1; min-width:0;}
+  .wrap{max-width:760px; margin:0 auto; padding:0 32px;}
+  .wrap.wide{max-width:920px;}
+  section{padding:64px 0; border-bottom:1px solid var(--line);}
+  section:last-of-type{border-bottom:none;}
+
+  /* ---------- hero ---------- */
+  section.hero{
+    background:var(--bg-deep);
+    color:#EAF3F2;
+    padding:0;
+    border-bottom:none;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero-inner{max-width:760px; margin:0 auto; padding:88px 32px 72px; position:relative; z-index:2;}
+  .hero-eyebrow{color:#5E8481; font-size:14px; margin-bottom:18px;}
+  .hero h1{color:#fff; font-size:40px; line-height:1.18; margin:0 0 20px; max-width:9.5em;}
+  .hero p.lede{color:#A9C7C4; font-size:17px; max-width:34em; margin:0 0 36px;}
+  .hero-stats{display:flex; gap:0; flex-wrap:wrap; border-top:1px solid rgba(255,255,255,0.14);}
+  .hero-stat{padding:20px 28px 6px 0; margin-right:28px;}
+  .hero-stat .num{font-family:'IBM Plex Mono',monospace; font-size:26px; color:#4FC3BE; font-weight:600;}
+  .hero-stat .lbl{font-size:13px; color:#8FADAA; margin-top:4px;}
+  .wave{position:absolute; right:-40px; top:40px; width:480px; opacity:0.5; z-index:1;}
+
+  /* ---------- typography helpers ---------- */
+  .kicker{font-size:13px; color:var(--teal); font-weight:600; margin-bottom:10px;}
+  h2{font-size:27px; margin:0 0 18px;}
+  h3{font-size:18px; margin:30px 0 10px;}
+  p{margin:0 0 16px; color:var(--ink-soft); max-width:64ch;}
+  p.lead{font-size:17px; color:var(--ink);}
+  ul.list{margin:0 0 16px; padding-left:20px; color:var(--ink-soft);}
+  ul.list li{margin-bottom:8px;}
+  strong{color:var(--ink); font-weight:600;}
+
+  /* ---------- cards / data viz ---------- */
+  .card{
+    background:var(--paper); border:1px solid var(--line); border-radius:10px;
+    padding:22px 24px;
+  }
+  .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:22px 0;}
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:22px 0;}
+  @media (max-width:640px){.grid-3,.grid-2{grid-template-columns:1fr;}}
+
+  .stat-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:10px;
+    padding:18px 18px;
+  }
+  .stat-card .num{font-family:'IBM Plex Mono',monospace; font-size:24px; font-weight:600; color:var(--teal);}
+  .stat-card .num.amber{color:var(--amber);}
+  .stat-card .num.green{color:var(--green);}
+  .stat-card .lbl{font-size:13px; color:var(--ink-soft); margin-top:4px;}
+
+  table.datatable{width:100%; border-collapse:collapse; margin:18px 0 8px; font-size:14px;}
+  table.datatable th{
+    text-align:left; font-family:'IBM Plex Sans'; font-weight:600; font-size:12.5px;
+    color:var(--ink-soft); padding:8px 12px; border-bottom:1px solid var(--line);
+  }
+  table.datatable td{padding:9px 12px; border-bottom:1px solid var(--line); font-family:'IBM Plex Mono',monospace; font-size:13.5px;}
+  table.datatable td.txt{font-family:'IBM Plex Sans',sans-serif; font-size:14px;}
+  table.datatable tr:last-child td{border-bottom:none;}
+  table.datatable td.bad{color:var(--amber); font-weight:600;}
+  table.datatable td.good{color:var(--teal); font-weight:600;}
+
+  /* bar viz */
+  .barviz{margin:20px 0;}
+  .barrow{display:flex; align-items:center; gap:12px; margin-bottom:9px;}
+  .barrow .barlabel{width:110px; font-size:13px; color:var(--ink-soft); flex-shrink:0;}
+  .barrow .bartrack{flex:1; background:#EBEFEE; border-radius:5px; height:20px; overflow:hidden; position:relative;}
+  .barrow .barfill{height:100%; border-radius:5px; background:var(--teal);}
+  .barrow .barval{width:56px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:13px; flex-shrink:0;}
+
+  /* pipeline */
+  .pipeline{display:flex; flex-direction:column; gap:0; margin:24px 0;}
+  .pipe-step{
+    display:flex; gap:16px; padding:16px 0; border-bottom:1px dashed var(--line);
+  }
+  .pipe-step:last-child{border-bottom:none;}
+  .pipe-num{
+    font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--teal);
+    width:26px; flex-shrink:0; padding-top:2px;
+  }
+  .pipe-body strong{display:block; font-size:15px; margin-bottom:3px;}
+  .pipe-body span{font-size:14px; color:var(--ink-soft);}
+
+  /* callout */
+  .callout{
+    border-left:3px solid var(--amber); background:var(--amber-soft);
+    padding:16px 20px; border-radius:0 8px 8px 0; margin:20px 0;
+  }
+  .callout.teal{border-left-color:var(--teal); background:var(--teal-soft);}
+  .callout.green{border-left-color:var(--green); background:var(--green-soft);}
+  .callout p{margin:0; color:var(--ink); font-size:14.5px;}
+  .callout .ctitle{font-weight:600; font-size:14px; margin-bottom:6px; display:block;}
+
+  /* algo tags */
+  .tag-row{display:flex; flex-wrap:wrap; gap:8px; margin:16px 0;}
+  .tag{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:5px 11px;
+    border-radius:99px; background:var(--teal-soft); color:var(--teal); border:1px solid #BFE0DF;
+  }
+
+  /* before/after mini chart */
+  .ba-chart{display:flex; align-items:flex-end; gap:6px; height:90px; margin:14px 0 4px;}
+  .ba-bar{flex:1; border-radius:4px 4px 0 0; position:relative;}
+  .ba-chart .lbls{display:flex; gap:6px; margin-top:6px;}
+  .ba-chart .lbls span{flex:1; text-align:center; font-size:11px; color:var(--ink-soft);}
+
+  /* ---------- interactive demo ---------- */
+  .demo-tabs{display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 24px;}
+  .demo-tab{
+    font-family:'IBM Plex Mono',monospace; font-size:13px; padding:8px 14px;
+    border-radius:8px; border:1px solid var(--line); background:var(--paper);
+    color:var(--ink-soft); cursor:pointer; transition:all .15s ease;
+  }
+  .demo-tab:hover{border-color:var(--teal); color:var(--teal);}
+  .demo-tab.active{background:var(--bg-deep); color:#fff; border-color:var(--bg-deep);}
+
+  .demo-panel{
+    display:grid; grid-template-columns:1.3fr 1fr; gap:0;
+    border:1px solid var(--line); border-radius:12px; overflow:hidden;
+    background:var(--paper);
+  }
+  @media (max-width:700px){.demo-panel{grid-template-columns:1fr;}}
+
+  .demo-wave{padding:26px 24px; background:#0E1B1D; position:relative;}
+  .demo-wave .wave-title{color:#7FA8A5; font-family:'IBM Plex Mono',monospace; font-size:12px; margin-bottom:10px;}
+  .demo-wave svg{width:100%; height:150px; display:block;}
+  .demo-wave polyline{fill:none; stroke:#4FC3BE; stroke-width:2;}
+
+  .demo-side{padding:22px 24px; display:flex; flex-direction:column; gap:16px;}
+  .demo-feat-row{display:flex; justify-content:space-between; align-items:baseline; padding:7px 0; border-bottom:1px solid var(--line);}
+  .demo-feat-row:last-child{border-bottom:none;}
+  .demo-feat-row .k{font-size:13px; color:var(--ink-soft);}
+  .demo-feat-row .v{font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:600;}
+
+  .demo-criterion{
+    font-size:12px; padding:4px 10px; border-radius:99px; display:inline-block;
+    background:var(--teal-soft); color:var(--teal); font-weight:600; margin-bottom:10px;
+  }
+  .demo-algo{font-family:'IBM Plex Mono',monospace; font-size:26px; font-weight:600; color:var(--ink); margin:2px 0 6px;}
+  .demo-reason{font-size:13.5px; color:var(--ink-soft); margin:0;}
+  .demo-metrics{display:flex; gap:18px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line);}
+  .demo-metrics div .num{font-family:'IBM Plex Mono',monospace; font-size:19px; font-weight:600; color:var(--green);}
+  .demo-metrics div .lbl{font-size:11.5px; color:var(--ink-soft);}
+
+  footer{padding:40px 32px 60px; color:var(--ink-soft); font-size:13px;}
+
+  @media (max-width:880px){
+    nav.side{display:none;}
+    .wrap{padding:0 22px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="side" id="sidenav">
+    <div class="brand">Compression Adaptative
+      <small>Multi-Capteurs · WESAD · Master BD/IA</small>
+    </div>
+    <div class="nav-group">
+      <a class="nav-link" href="#probleme">Problématique</a>
+      <a class="nav-link" href="#architecture">Architecture</a>
+      <a class="nav-link" href="#algorithmes">6 algorithmes</a>
+      <a class="nav-link" href="#selecteur">Sélecteur &amp; métaheuristique</a>
+      <a class="nav-link" href="#demo">Démonstration interactive</a>
+      <a class="nav-link" href="#emg">L'échec EMG &amp; le filet de sécurité</a>
+      <a class="nav-link" href="#generalisation">Généralisation (13 sujets)</a>
+      <a class="nav-link" href="#ml">Impact sur un usage réel (ML)</a>
+      <a class="nav-link" href="#stockage">Stockage Big Data</a>
+      <a class="nav-link" href="#valeur">Valeur ajoutée</a>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="hero">
+      <svg class="wave" viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="0,100 40,100 55,60 70,150 85,20 100,100 140,100 260,100 275,70 290,130 305,100 500,100"
+          fill="none" stroke="#2E5C58" stroke-width="2.5"/>
+        <polyline points="0,150 90,150 110,140 130,158 150,150 500,150"
+          fill="none" stroke="#204743" stroke-width="1.6" opacity="0.7"/>
+      </svg>
+      <div class="hero-inner">
+        <div class="hero-eyebrow mono">Master Big Data, IA &amp; Applications Avancées — Université Ibn Tofail</div>
+        <h1>Un même algorithme de compression ne convient jamais à tous les signaux physiologiques.</h1>
+        <p class="lede">Ce projet construit un sélecteur qui choisit, segment par segment et capteur par capteur, l'algorithme de compression le plus adapté — les seuils de décision étant appris par un algorithme génétique, pas fixés à la main.</p>
+        <div class="hero-stats">
+          <div class="hero-stat"><div class="num">13/15</div><div class="lbl">sujets WESAD exploités</div></div>
+          <div class="hero-stat"><div class="num">10</div><div class="lbl">canaux physiologiques</div></div>
+          <div class="hero-stat"><div class="num">6</div><div class="lbl">algorithmes, 6 familles distinctes</div></div>
+          <div class="hero-stat"><div class="num">2,1 Go</div><div class="lbl">de données brutes traitées</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROBLEME -->
+    <section id="probleme">
+      <div class="wrap">
+        <div class="kicker">01 — Problématique</div>
+        <h2>Trois signaux, trois natures, trois besoins de compression opposés</h2>
+        <p class="lead">Le dataset WESAD combine un dispositif thoracique (RespiBAN, 700 Hz) et un bracelet (Empatica E4, 4 à 64 Hz selon le canal). Ces dix canaux n'ont presque rien en commun statistiquement.</p>
+
+        <div class="grid-3">
+          <div class="stat-card">
+            <div class="num">ECG</div>
+            <div class="lbl">700 Hz · transitoires de forte amplitude (QRS) · nécessite une décomposition fréquentielle fine</div>
+          </div>
+          <div class="stat-card">
+            <div class="num">EDA</div>
+            <div class="lbl">4–700 Hz selon dispositif · variation lente et continue · peu de redondance exacte</div>
+          </div>
+          <div class="stat-card">
+            <div class="num">TEMP</div>
+            <div class="lbl">4–700 Hz · quasi constant · fortement compressible par redondance simple</div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <span class="ctitle">Ce que ça implique</span>
+          <p>Appliquer un algorithme unique à l'ensemble du flux, c'est nécessairement sacrifier soit le ratio de compression sur les signaux stables, soit la fidélité sur les signaux complexes. D'où la question centrale du projet : comment décider dynamiquement, segment par segment ?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section id="architecture">
+      <div class="wrap">
+        <div class="kicker">02 — Architecture</div>
+        <h2>Un pipeline en cinq étapes, apprentissage et inférence découplés</h2>
+        <p>L'optimisation des seuils (coûteuse) se fait une seule fois, hors-ligne. La sélection et la compression (rapides) tournent ensuite sur chaque nouveau segment.</p>
+
+        <div class="pipeline">
+          <div class="pipe-step">
+            <div class="pipe-num">01</div>
+            <div class="pipe-body"><strong>Chargement &amp; segmentation</strong><span>Lecture des fichiers WESAD (.pkl), découpage en fenêtres de 5 secondes non chevauchantes, par canal.</span></div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-num">02</div>
+            <div class="pipe-body"><strong>Extraction de caractéristiques</strong><span>Variance, entropie de Shannon (20 classes), taille en octets — plus une référence par capteur (médiane) pour rendre les seuils comparables entre canaux.</span></div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-num">03</div>
+            <div class="pipe-body"><strong>Optimisation hors-ligne (métaheuristique)</strong><span>Un algorithme génétique (DEAP, 24 individus, 15 générations) apprend 5 seuils sur un sujet d'apprentissage (S2).</span></div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-num">04</div>
+            <div class="pipe-body"><strong>Sélection &amp; compression en ligne</strong><span>Pour chaque nouveau segment : application du sélecteur, compression par l'algorithme choisi, vérification du filet de sécurité.</span></div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-num">05</div>
+            <div class="pipe-body"><strong>Évaluation &amp; export</strong><span>Métriques agrégées, export Parquet/HDF5, visualisations.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALGORITHMES -->
+    <section id="algorithmes">
+      <div class="wrap wide">
+        <div class="kicker">03 — Les six algorithmes</div>
+        <h2>Une famille différente pour chaque grand principe de compression</h2>
+        <p>Le nombre d'algorithmes a été volontairement limité à la demande de l'encadrant, pour privilégier la profondeur de l'analyse sur la quantité.</p>
+
+        <table class="datatable">
+          <tr><th>Algorithme</th><th>Famille</th><th>Principe</th></tr>
+          <tr><td class="txt"><strong>RLE</strong></td><td class="txt">Redondance</td><td class="txt">Remplace les suites de valeurs identiques par (valeur, longueur)</td></tr>
+          <tr><td class="txt"><strong>LZ77</strong></td><td class="txt">Dictionnaire</td><td class="txt">Référence les motifs déjà rencontrés dans une fenêtre glissante</td></tr>
+          <tr><td class="txt"><strong>Huffman adaptatif</strong></td><td class="txt">Entropique</td><td class="txt">Codes courts pour les valeurs fréquentes, recalculés par bloc</td></tr>
+          <tr><td class="txt"><strong>Delta / DPCM</strong></td><td class="txt">Prédictif</td><td class="txt">Code la différence entre échantillons consécutifs</td></tr>
+          <tr><td class="txt"><strong>DCT</strong></td><td class="txt">Transformée fréquentielle</td><td class="txt">Concentre l'énergie sur peu de coefficients fréquentiels</td></tr>
+          <tr><td class="txt"><strong>DWT</strong></td><td class="txt">Transformée multi-résolution</td><td class="txt">Décompose en sous-bandes temps-fréquence, seuillage par échelle</td></tr>
+        </table>
+
+        <h3>Aucun algorithme fixe ne domine sur les deux critères à la fois</h3>
+        <div class="barviz">
+          <div class="barrow"><div class="barlabel">RLE (fixe)</div><div class="bartrack"><div class="barfill" style="width:52%; background:#0E7C86;"></div></div><div class="barval mono">CR 2,56</div></div>
+          <div class="barrow"><div class="barlabel">LZ77 (fixe)</div><div class="bartrack"><div class="barfill" style="width:42%; background:#0E7C86;"></div></div><div class="barval mono">CR 2,05</div></div>
+          <div class="barrow"><div class="barlabel">Huffman (fixe)</div><div class="bartrack"><div class="barfill" style="width:43%; background:#0E7C86;"></div></div><div class="barval mono">CR 2,12</div></div>
+          <div class="barrow"><div class="barlabel">Delta (fixe)</div><div class="bartrack"><div class="barfill" style="width:42%; background:#0E7C86;"></div></div><div class="barval mono">CR 2,08</div></div>
+          <div class="barrow"><div class="barlabel">DCT (fixe)</div><div class="bartrack"><div class="barfill" style="width:85%; background:#C2740A;"></div></div><div class="barval mono">CR 4,17</div></div>
+          <div class="barrow"><div class="barlabel"><strong>Adaptatif</strong></div><div class="bartrack"><div class="barfill" style="width:65%; background:#3F8F5F;"></div></div><div class="barval mono"><strong>meilleur compromis</strong></div></div>
+        </div>
+        <p style="font-size:13px; color:var(--ink-soft);">DCT obtient le meilleur ratio brut mais au prix d'une fidélité largement dégradée sur certains canaux (voir section EMG) — la sélection adaptative vise le meilleur <em>compromis</em>, pas le meilleur ratio isolé.</p>
+      </div>
+    </section>
+
+    <!-- SELECTEUR -->
+    <section id="selecteur">
+      <div class="wrap">
+        <div class="kicker">04 — Sélecteur multi-critères &amp; métaheuristique</div>
+        <h2>Trois critères, cinq seuils, appris — pas fixés à la main</h2>
+
+        <div class="pipeline">
+          <div class="pipe-step">
+            <div class="pipe-num">1</div>
+            <div class="pipe-body"><strong>Critère TAILLE</strong><span>Segment trop petit (relatif à la référence du capteur) → algorithme à overhead minimal (LZ77), sinon le codebook/métadonnées coûtent plus que le gain.</span></div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-num">2</div>
+            <div class="pipe-body"><strong>Critère SÉQUENCE</strong><span>Segment très semblable au précédent (variance stable) → encodage différentiel (Delta), qui exploite directement cette redondance temporelle.</span></div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-num">3</div>
+            <div class="pipe-body"><strong>Critère SEUIL (entropie)</strong><span>Trois seuils ordonnés répartissent le reste entre RLE, Huffman, DWT et DCT selon la complexité du segment.</span></div>
+          </div>
+        </div>
+
+        <h3>La fonction objectif — quatre termes, chacun justifié</h3>
+        <div class="card">
+          <p class="mono" style="color:var(--teal); font-size:15px; margin-bottom:14px;">Fitness = W₁·ratio_global − W₂·PRD_pondéré − W₃·temps_normalisé + W₄·diversité</p>
+          <ul class="list">
+            <li><strong>ratio_global</strong> — somme des tailles brutes / somme des tailles compressées (pas une moyenne de ratios, qui se révèle biaisée — voir encadré ci-dessous)</li>
+            <li><strong>PRD_pondéré</strong> — pénalité renforcée sur les canaux cliniquement critiques (ECG ×2,5, BVP ×2)</li>
+            <li><strong>temps_normalisé</strong> — coût de calcul CPU, normalisé par un budget de référence de 10 ms</li>
+            <li><strong>diversité</strong> — entropie de Shannon de la distribution des choix d'algorithmes, pour éviter l'effondrement vers une seule solution dominante</li>
+          </ul>
+        </div>
+
+        <div class="callout teal">
+          <span class="ctitle">Un biais méthodologique trouvé et corrigé</span>
+          <p>La moyenne arithmétique des ratios par segment est dominée par les valeurs extrêmes (un segment quasi constant compressé ×50 gonfle artificiellement la moyenne). Le ratio <em>global</em> (somme/somme) donne une mesure fidèle au gain de stockage réel — les deux métriques sont désormais rapportées systématiquement.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEMO INTERACTIVE -->
+    <section id="demo">
+      <div class="wrap wide">
+        <div class="kicker">Voir le sélecteur en action</div>
+        <h2>Change de capteur, regarde la décision changer</h2>
+        <p class="lead">Six segments représentatifs, extraits des mesures réelles du projet. Le sélecteur applique ses trois critères dans l'ordre — taille, séquence, puis seuil d'entropie.</p>
+
+        <div class="demo-tabs" id="demoTabs"></div>
+
+        <div class="demo-panel">
+          <div class="demo-wave">
+            <div class="wave-title mono" id="demoWaveTitle">chest_ECG · 700 Hz</div>
+            <svg viewBox="0 0 400 150" preserveAspectRatio="none">
+              <polyline id="demoPolyline" points=""/>
+            </svg>
+          </div>
+          <div class="demo-side">
+            <div>
+              <span class="demo-criterion" id="demoCriterion">Critère : seuil (entropie)</span>
+              <div class="demo-algo" id="demoAlgo">DCT</div>
+              <p class="demo-reason" id="demoReason">Entropie élevée (signal riche en fréquence) → transformée fréquentielle globale.</p>
+            </div>
+            <div>
+              <div class="demo-feat-row"><span class="k">Entropie</span><span class="v" id="demoEnt">—</span></div>
+              <div class="demo-feat-row"><span class="k">Variance</span><span class="v" id="demoVar">—</span></div>
+              <div class="demo-feat-row"><span class="k">Taille segment</span><span class="v" id="demoSize">—</span></div>
+            </div>
+            <div class="demo-metrics">
+              <div><div class="num" id="demoRatio">—</div><div class="lbl">Ratio</div></div>
+              <div><div class="num" id="demoPrd">—</div><div class="lbl">PRD</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EMG -->
+    <section id="emg">
+      <div class="wrap">
+        <div class="kicker">05 — Un échec réel, trouvé et corrigé</div>
+        <h2>Sur le canal EMG, DCT et DWT échouent catastrophiquement</h2>
+        <p class="lead">En analysant les résultats canal par canal — pas seulement les moyennes globales — un résultat structure toute la contribution méthodologique du projet.</p>
+
+        <div class="ba-chart">
+          <div class="ba-bar" style="height:100%; background:#C2740A;"></div>
+          <div class="ba-bar" style="height:99%; background:#C2740A;"></div>
+          <div class="ba-bar" style="height:4%; background:#0E7C86;"></div>
+          <div class="ba-bar" style="height:4%; background:#0E7C86;"></div>
+          <div class="ba-bar" style="height:3%; background:#0E7C86;"></div>
+          <div class="ba-bar" style="height:3%; background:#3F8F5F;"></div>
+        </div>
+        <div class="ba-chart lbls">
+          <span>DCT<br><span class="mono">42,5%</span></span>
+          <span>DWT<br><span class="mono">42,4%</span></span>
+          <span>RLE<br><span class="mono">&lt;2%</span></span>
+          <span>LZ77<br><span class="mono">&lt;2%</span></span>
+          <span>Huffman<br><span class="mono">&lt;2%</span></span>
+          <span>Delta<br><span class="mono">&lt;2%</span></span>
+        </div>
+        <p style="font-size:13px; color:var(--ink-soft); text-align:center; margin-top:0;">PRD (%) par algorithme sur le canal EMG — un PRD de 42% signifie une reconstruction quasi inexploitable.</p>
+
+        <h3>Pourquoi ça arrive</h3>
+        <p>L'EMG est dominé par du bruit haute fréquence sans structure périodique exploitable. Les méthodes fréquentielles (DCT, DWT) concentrent l'énergie sur peu de coefficients — une hypothèse qui s'effondre quand il n'y a justement pas de structure fréquentielle à concentrer.</p>
+
+        <div class="callout green">
+          <span class="ctitle">La contribution personnelle : un filet de sécurité post-compression</span>
+          <p>Plutôt que de dépendre uniquement d'un calibrage fin des seuils — fragile, car dépendant des données d'apprentissage — un mécanisme vérifie systématiquement le PRD obtenu après compression. Si le seuil critique est dépassé, le segment est automatiquement recompressé avec un algorithme de repli sans perte. Validé sur les 13 sujets : le pire PRD observé sur EMG reste sous le seuil de sécurité dans tous les cas.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GENERALISATION -->
+    <section id="generalisation">
+      <div class="wrap">
+        <div class="kicker">06 — Généralisation</div>
+        <h2>Les seuils appris sur un seul sujet tiennent sur douze autres, jamais vus</h2>
+        <p class="lead">Les cinq seuils sont optimisés une seule fois, sur S2. Ils sont ensuite appliqués <strong>sans réoptimisation</strong> à 12 sujets indépendants.</p>
+
+        <div class="grid-2">
+          <div class="stat-card">
+            <div class="num">2,43</div>
+            <div class="lbl">ratio global — S2 (entraînement)</div>
+          </div>
+          <div class="stat-card">
+            <div class="num">2,38 – 2,59</div>
+            <div class="lbl">ratio global — 12 sujets test (jamais vus)</div>
+          </div>
+          <div class="stat-card">
+            <div class="num">0,45%</div>
+            <div class="lbl">PRD — S2 (entraînement)</div>
+          </div>
+          <div class="stat-card">
+            <div class="num">0,32 – 0,40%</div>
+            <div class="lbl">PRD — 12 sujets test</div>
+          </div>
+        </div>
+        <p>Aucune dégradation systématique observée sur les sujets non vus — la preuve empirique que le système ne fait pas du sur-mesure pour un seul patient.</p>
+      </div>
+    </section>
+
+    <!-- ML -->
+    <section id="ml">
+      <div class="wrap">
+        <div class="kicker">07 — Impact sur un usage réel</div>
+        <h2>La compression préserve-t-elle l'information utile à un vrai diagnostic ?</h2>
+        <p class="lead">Un classifieur stress / baseline est entraîné sur les signaux originaux, puis testé sur les mêmes fenêtres après compression et reconstruction.</p>
+
+        <table class="datatable">
+          <tr><th>Condition</th><th>Accuracy</th><th>Stabilité (5 replis)</th></tr>
+          <tr><td class="txt">Signal original</td><td class="good">0,932</td><td class="txt">Stable</td></tr>
+          <tr><td class="txt">Signal compressé puis reconstruit</td><td class="txt">Dégradée</td><td class="bad">Instable selon les replis</td></tr>
+        </table>
+
+        <div class="callout">
+          <span class="ctitle">Un résultat honnête, pas caché</span>
+          <p>L'instabilité provient probablement des caractéristiques utilisées pour la classification (moyenne/écart-type), sensibles au bruit de quantification introduit par la compression. C'est une limite documentée, pas un problème dissimulé — et une piste claire d'amélioration (perspectives).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- STOCKAGE -->
+    <section id="stockage">
+      <div class="wrap">
+        <div class="kicker">08 — Technologies de stockage Big Data</div>
+        <h2>Export vers des formats de stockage structurés</h2>
+        <p>Au-delà de la compression elle-même, les données sont exportées vers deux formats standards du Big Data, avec un gain de stockage réel mesuré après l'overhead de métadonnées propre à chaque format.</p>
+
+        <div class="grid-2">
+          <div class="stat-card"><div class="num green">5,52%</div><div class="lbl">gain réel — export Parquet</div></div>
+          <div class="stat-card"><div class="num green">2,44%</div><div class="lbl">gain réel — export HDF5</div></div>
+        </div>
+        <p style="font-size:13px;">Gain théorique sur la somme des octets compressés : 6,59% — l'écart avec le gain réel illustre le coût de métadonnées propre à chaque format de stockage, un point rarement discuté dans les projets similaires.</p>
+      </div>
+    </section>
+
+    <!-- VALEUR AJOUTEE -->
+    <section id="valeur">
+      <div class="wrap">
+        <div class="kicker">09 — Valeur ajoutée</div>
+        <h2>Au-delà de l'énoncé initial</h2>
+
+        <div class="tag-row">
+          <span class="tag">Fonction objectif à 4 termes</span>
+          <span class="tag">Filet de sécurité post-compression</span>
+          <span class="tag">Généralisation 13 sujets</span>
+          <span class="tag">Validation tâche ML en aval</span>
+          <span class="tag">Ratio moyen vs global — biais corrigé</span>
+        </div>
+
+        <p class="lead">Deux contributions structurent la valeur ajoutée du projet au-delà du cahier des charges :</p>
+        <ul class="list">
+          <li>Une fonction objectif complète (ratio, PRD pondéré cliniquement, coût CPU, diversité), alors que la majorité des travaux comparés se limitent à ratio et fidélité seuls.</li>
+          <li>Un filet de sécurité post-compression, mécanisme non trouvé dans les travaux cités, qui détecte et corrige automatiquement les échecs catastrophiques d'un algorithme mal adapté à un segment.</li>
+        </ul>
+        <p>Le projet documente aussi, sans les cacher, les limites rencontrées — biais de métrique, instabilité ML en aval, deux sujets indisponibles — une transparence qui fait partie intégrante de la démarche scientifique.</p>
+      </div>
+    </section>
+
+    <footer>
+      Compression Adaptative de Signaux Physiologiques Multi-Capteurs par Sélection Dynamique d'Algorithme via Métaheuristique — Bilal Jellaoui, Mohamed Azil, Ayoube Echihami · Encadré par Pr. Ayoub Sghir · Master Big Data, IA &amp; Applications Avancées, Université Ibn Tofail
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  // ---------------- Démo interactive : sélecteur en action ----------------
+  const DEMO_SIGNALS = {
+    chest_ECG: {
+      label: 'ECG', freq:'700 Hz', criterion:'Critère : seuil (entropie)',
+      algo:'DCT', reason:"Entropie élevée (transitoires QRS, signal riche en fréquence) → transformée fréquentielle globale.",
+      entropy:'2,74', variance:'0,031', size:'14 000 octets', ratio:'×4,65', prd:'3,67 %',
+      wave:(()=>{let p=[]; for(let x=0;x<400;x+=4){let base=75+8*Math.sin(x/38);
+        const beat = (x%66); if(beat>28 && beat<34){base -= 55*Math.exp(-Math.pow(beat-31,2)/2);}
+        if(beat>=34 && beat<40){base += 20*Math.exp(-Math.pow(beat-37,2)/2);}
+        p.push(x+','+base);} return p.join(' ');})()
+    },
+    chest_Temp: {
+      label:'Température', freq:'700 Hz', criterion:'Critère : seuil (entropie basse)',
+      algo:'RLE', reason:"Signal quasi constant, très peu de valeurs distinctes → exploite directement la répétition.",
+      entropy:'0,04', variance:'0,0002', size:'14 000 octets', ratio:'×3,16', prd:'0,001 %',
+      wave:(()=>{let p=[]; let base=75; for(let x=0;x<400;x+=4){ if(x%90<3) base += (Math.random()>0.5?3:-3);
+        p.push(x+','+(base+Math.random()*0.6));} return p.join(' ');})()
+    },
+    chest_EMG: {
+      label:'EMG', freq:'700 Hz', criterion:'Filet de sécurité déclenché',
+      algo:'Delta (repli sûr)', reason:"Bruit haute fréquence sans structure exploitable — DCT/DWT donneraient un PRD > 40 %, le filet de sécurité impose un algorithme sans perte.",
+      entropy:'2,91', variance:'0,00042', size:'14 000 octets', ratio:'×2,93', prd:'1,95 %',
+      wave:(()=>{let p=[]; for(let x=0;x<400;x+=3){let base=75+ (Math.random()-0.5)*70;
+        p.push(x+','+base);} return p.join(' ');})()
+    },
+    wrist_EDA: {
+      label:'EDA (poignet)', freq:'4 Hz', criterion:'Critère : taille',
+      algo:'LZ77', reason:"Segment très petit (80 octets) — tout algorithme à overhead fixe (Huffman, DWT) serait contre-productif.",
+      entropy:'1,42', variance:'0,026', size:'80 octets', ratio:'×1,08', prd:'0,00 %',
+      wave:(()=>{let p=[]; for(let x=0;x<400;x+=20){let t=x/400;
+        let base=110-70*Math.exp(-Math.pow(t-0.5,2)*8);
+        p.push(x+','+base);} return p.join(' ');})()
+    },
+    chest_Resp: {
+      label:'Respiration', freq:'700 Hz', criterion:'Critère : seuil (entropie moyenne)',
+      algo:'DCT', reason:"Signal quasi périodique et lisse → l'énergie se concentre sur peu de coefficients fréquentiels.",
+      entropy:'1,95', variance:'1,71', size:'14 000 octets', ratio:'×3,98', prd:'1,66 %',
+      wave:(()=>{let p=[]; for(let x=0;x<400;x+=4){let base=75+45*Math.sin(x/48);
+        p.push(x+','+base);} return p.join(' ');})()
+    },
+    wrist_BVP: {
+      label:'BVP (poignet)', freq:'64 Hz', criterion:'Critère : séquence + seuil',
+      algo:'DWT', reason:"Signal pulsatile localisé dans le temps → la décomposition temps-fréquence capture les pics sans les étaler.",
+      entropy:'2,18', variance:'0,84', size:'1 280 octets', ratio:'×4,22', prd:'2,29 %',
+      wave:(()=>{let p=[]; for(let x=0;x<400;x+=4){let base=90;
+        const beat=(x%80); if(beat<18){base -= 40*Math.exp(-Math.pow(beat-9,2)/12);}
+        p.push(x+','+(base+Math.sin(x/9)*2));} return p.join(' ');})()
+    }
+  };
+
+  const tabsEl = document.getElementById('demoTabs');
+  Object.keys(DEMO_SIGNALS).forEach((key,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'demo-tab' + (i===0?' active':'');
+    btn.textContent = DEMO_SIGNALS[key].label;
+    btn.onclick = ()=> selectDemoSignal(key, btn);
+    btn.dataset.key = key;
+    tabsEl.appendChild(btn);
+  });
+
+  function selectDemoSignal(key, btnEl){
+    const d = DEMO_SIGNALS[key];
+    document.querySelectorAll('.demo-tab').forEach(b=>b.classList.remove('active'));
+    if(btnEl) btnEl.classList.add('active');
+
+    document.getElementById('demoWaveTitle').textContent = key + ' · ' + d.freq;
+    document.getElementById('demoPolyline').setAttribute('points', d.wave);
+    document.getElementById('demoCriterion').textContent = d.criterion;
+    document.getElementById('demoAlgo').textContent = d.algo;
+    document.getElementById('demoReason').textContent = d.reason;
+    document.getElementById('demoEnt').textContent = d.entropy;
+    document.getElementById('demoVar').textContent = d.variance;
+    document.getElementById('demoSize').textContent = d.size;
+    document.getElementById('demoRatio').textContent = d.ratio;
+    document.getElementById('demoPrd').textContent = d.prd;
+  }
+  selectDemoSignal('chest_ECG', null);
+  document.querySelector('.demo-tab').classList.add('active');
+
+  // met en surbrillance le lien actif au scroll
+  const links = document.querySelectorAll('nav.side a.nav-link');
+  const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href')));
+  function onScroll(){
+    let idx = 0;
+    const y = window.scrollY + 140;
+    sections.forEach((s,i)=>{ if(s && s.offsetTop <= y) idx = i; });
+    links.forEach((l,i)=> l.classList.toggle('active', i===idx));
+  }
+  document.addEventListener('scroll', onScroll);
+  onScroll();
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+format,taille_mo
+Données brutes (référence),8.608
+Somme des octets compressés,3.263955
+Fichier Parquet final,3.296732
+Fichier HDF5 final,3.40888

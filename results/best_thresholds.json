@@ -1,0 +1,7 @@
+{
+  "rel_size_threshold": 0.9139193926829006,
+  "entropy_threshold_low": 2.0922298440313787,
+  "entropy_threshold_mid": 2.3642865281482055,
+  "entropy_threshold_high": 2.5893776166336027,
+  "rel_sim_threshold": 0.12078092404768226
+}

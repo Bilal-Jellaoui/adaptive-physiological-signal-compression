@@ -1,0 +1,13 @@
+numpy
+pandas
+scipy
+matplotlib
+seaborn
+scikit-learn
+PyWavelets
+deap
+pyswarms
+pyarrow
+h5py
+zstandard
+jupyter
